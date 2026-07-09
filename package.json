@@ -12,7 +12,8 @@
     "build": "vite build --config client/vite.config.js",
     "start": "node server/index.js",
     "test": "vitest run",
-    "seed:admin": "node server/scripts/seed-admin.js"
+    "seed:admin": "node server/scripts/seed-admin.js",
+    "seed:demo": "node server/scripts/seed-demo-users.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

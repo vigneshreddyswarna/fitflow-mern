@@ -19,4 +19,4 @@ const fitnessClassSchema = new mongoose.Schema({
   accent: { type: String, default: '#c7f36b' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('FitnessClass', fitnessClassSchema);
+module.exports = mongoose.models.FitnessClass || mongoose.model('FitnessClass', fitnessClassSchema);

@@ -30,4 +30,4 @@ const userSchema = new mongoose.Schema({
   bookedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FitnessClass' }]
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.models.User || mongoose.model('User', userSchema);
