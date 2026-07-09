@@ -116,4 +116,41 @@ run('database-backed product flows', () => {
     expect(response.body.role).toBe('trainer');
     await expect(User.findById(member._id).then(user => user.role)).resolves.toBe('trainer');
   });
+
+  it('requires admin-created classes to use a verified trainer account', async () => {
+    const admin = await createVerifiedUser({ name: 'Integration Class Admin', role: 'admin' });
+    const trainer = await createVerifiedUser({ name: 'Integration Class Trainer', role: 'trainer' });
+
+    await request(app)
+      .post('/api/admin/classes')
+      .set('Authorization', `Bearer ${tokenFor(admin)}`)
+      .send({
+        title: 'Integration Trainer Assignment',
+        category: 'Strength',
+        schedule: 'Wed - 6:00 PM',
+        startsAt: new Date(Date.now() + 86400000).toISOString(),
+        duration: 45,
+        level: 'Intermediate',
+        capacity: 12
+      })
+      .expect(400);
+
+    const response = await request(app)
+      .post('/api/admin/classes')
+      .set('Authorization', `Bearer ${tokenFor(admin)}`)
+      .send({
+        title: 'Integration Trainer Assignment',
+        category: 'Strength',
+        schedule: 'Wed - 6:00 PM',
+        startsAt: new Date(Date.now() + 86400000).toISOString(),
+        duration: 45,
+        level: 'Intermediate',
+        capacity: 12,
+        trainer: trainer._id
+      })
+      .expect(201);
+
+    expect(String(response.body.trainer)).toBe(String(trainer._id));
+    expect(response.body.coach).toBe(trainer.name);
+  });
 });

@@ -75,7 +75,7 @@ function Classes() {
     <div className="filters">{categories.map(c => <button className={filter === c ? 'active' : ''} onClick={() => setFilter(c)} key={c}>{c}</button>)}</div>
     {loading ? <SkeletonGrid count={4} className="class-grid" /> : <div className="class-grid">{shown.map((item, index) => <article className="class-card" key={item._id} style={{'--accent': item.accent}}>
       <div className="class-art"><span>{String(index + 1).padStart(2, '0')}</span><div className="art-ring"/><b>{item.category.toUpperCase()}</b></div>
-      <div className="class-body"><div className="class-meta"><span>{item.level}</span><span><Icon name="clock" size={15}/>{item.duration} min</span></div><h2>{item.title}</h2><p>Trainer: {item.trainer ? <Link to={`/trainers/${item.trainer}`}>{item.coach}</Link> : item.coach}</p><div className="class-footer"><div><small>{item.schedule}</small><b>{item.spotsLeft} spots left</b></div><button onClick={() => book(item._id)}>Book <Icon name="arrow" size={17}/></button></div></div>
+      <div className="class-body"><div className="class-meta"><span>{item.level}</span><span><Icon name="clock" size={15}/>{item.duration} min</span></div><h2>{item.title}</h2><p>Trainer: {item.trainer ? <Link to={`/trainers/${item.trainer}`}>{item.trainerName}</Link> : item.trainerName}</p><div className="class-footer"><div><small>{item.schedule}</small><b>{item.spotsLeft} spots left</b></div><button onClick={() => book(item._id)}>Book <Icon name="arrow" size={17}/></button></div></div>
     </article>)}</div>}
   </section>;
 }
