@@ -1,0 +1,42 @@
+{
+  "name": "fitflow-mern",
+  "version": "2.0.0",
+  "private": true,
+  "packageManager": "pnpm@11.7.0",
+  "description": "A MERN fitness consistency and class booking platform",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"pnpm server\" \"pnpm client\"",
+    "server": "nodemon server/index.js",
+    "client": "vite --config client/vite.config.js",
+    "build": "vite build --config client/vite.config.js",
+    "start": "node server/index.js",
+    "test": "vitest run",
+    "seed:admin": "node server/scripts/seed-admin.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.1",
+    "nodemailer": "^7.0.5",
+    "openai": "^5.8.2",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.6.2",
+    "recharts": "^2.15.3",
+    "stripe": "^18.3.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.5.1",
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.10",
+    "supertest": "^7.1.1",
+    "vitest": "^3.2.4",
+    "vite": "^6.3.5"
+  }
+}
