@@ -43,7 +43,7 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 
 React, React Router, Recharts, Vite, Node.js, Express, MongoDB, Mongoose, JWT, and bcrypt.
 
-Optional integrations use OpenAI, Stripe, Google Identity, EmailJS, and SMTP/Brevo. The AI Coach remains functional without those services.
+Optional integrations use OpenAI, Stripe, Google Identity, and SMTP/Brevo email delivery. The AI Coach remains functional without those services.
 
 ## Run locally
 
@@ -81,7 +81,7 @@ Use the values you set in `.env` for `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Admin u
 ## Optional service configuration
 
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enables generated adaptive plans. Without them, the safe rules engine creates plans.
-- `SMTP_*` or `EMAILJS_*`: sends verification, reset, and booking emails. Brevo works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587`, the Brevo SMTP login, and the Brevo SMTP key. Without an email provider, messages are printed as local previews.
+- `SMTP_*`: sends verification, reset, and booking emails. Brevo works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key. Without an email provider, messages are printed as local previews.
 - `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`: enables hosted membership checkout.
 - `GOOGLE_CLIENT_ID`: enables the verified Google token endpoint.
 - `APP_URL`: the frontend origin used in email and payment return links.
