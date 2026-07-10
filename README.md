@@ -89,6 +89,8 @@ Database-backed integration tests are included for signup OTP, forgot-password O
 INTEGRATION_MONGODB_URI=mongodb://127.0.0.1:27017/fitflow-integration pnpm test
 ```
 
+GitHub Actions starts a MongoDB service automatically and sets `INTEGRATION_MONGODB_URI`, so pull requests run the integration suite instead of skipping it.
+
 ## Demo access
 
 Create the admin account locally with:
@@ -106,6 +108,16 @@ ALLOW_DEMO_ACCOUNTS=true pnpm seed:demo
 ```
 
 Set `DEMO_ADMIN_EMAIL`, `DEMO_ADMIN_PASSWORD`, `DEMO_TRAINER_EMAIL`, `DEMO_TRAINER_PASSWORD`, `DEMO_MEMBER_EMAIL`, and `DEMO_MEMBER_PASSWORD` first. Keep demo passwords out of public commits if they use real admin privileges. For portfolio sharing, prefer throwaway demo accounts and rotate the passwords after interviews.
+
+Recommended demo setup:
+
+| Role | Purpose |
+|---|---|
+| Demo admin | Shows Manage, analytics, user roles, and class operations |
+| Demo trainer | Shows assigned sessions, roster, waitlist, and attendance marking |
+| Demo member | Shows signup/login flow, bookings, dashboard, settings, and AI Coach |
+
+Use non-personal email addresses for these accounts and keep the actual passwords only in Render/GitHub secrets, not in the README.
 
 ## Optional service configuration
 
@@ -162,9 +174,14 @@ pnpm seed:admin
 ## Code organization
 
 - `client/src/App.jsx`: route composition and shared authenticated page flows.
+- `client/src/components/*`: shared navigation and form controls such as password visibility and OTP entry.
 - `client/src/pages/Home.jsx`: portfolio-facing homepage experience.
+- `client/src/pages/Auth.jsx`: login, signup, signup OTP, and forgot-password OTP flows.
+- `client/src/pages/Dashboard.jsx`: member progress, bookings, workout logging, and activity chart.
+- `client/src/pages/Coach.jsx`: adaptive AI Coach planning workflow.
+- `client/src/pages/Settings.jsx`: profile, trainer profile, and password settings.
 - `client/src/pages/Classes.jsx`: class catalog and class detail pages.
-- `client/src/pages/Admin.jsx`: admin/trainer workspace for role and class operations.
+- `client/src/pages/Admin.jsx` and `client/src/pages/admin/*`: admin/trainer workspace split into analytics, people, class form, and class manager sections.
 - `client/src/ui.jsx`: reusable UI primitives such as icons, stats, empty states, skeletons, and confirmation modals.
 - `client/src/auth-context.jsx`: shared authenticated user context.
 - `server/routes/*`: feature-focused API modules for auth, classes, trainers, workouts, coach, admin, notifications, and payments.
