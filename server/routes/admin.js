@@ -18,16 +18,16 @@ router.get('/analytics', roles('admin', 'trainer'), async (req, res, next) => {
   try {
     const classQuery = req.user.role === 'trainer' ? { trainer: req.user.id, cancelled: false } : { cancelled: false };
     const classes = await FitnessClass.find(classQuery).populate('trainer', 'name').lean();
-    const totalBookings = classes.reduce((sum, item) => sum + item.attendees.length, 0);
+    const totalBookings = classes.reduce((sum, item) => sum + (item.attendees || []).length, 0);
     const totalCapacity = classes.reduce((sum, item) => sum + item.capacity, 0);
-    const attended = classes.reduce((sum, item) => sum + item.attendance.filter(mark => mark.status === 'attended').length, 0);
-    const missed = classes.reduce((sum, item) => sum + item.attendance.filter(mark => mark.status === 'missed').length, 0);
+    const attended = classes.reduce((sum, item) => sum + (item.attendance || []).filter(mark => mark.status === 'attended').length, 0);
+    const missed = classes.reduce((sum, item) => sum + (item.attendance || []).filter(mark => mark.status === 'missed').length, 0);
     const trainerMap = new Map();
     classes.forEach(item => {
       const trainerName = item.trainer?.name || item.coach || 'Unassigned';
       const current = trainerMap.get(trainerName) || { trainer: trainerName, classes: 0, bookings: 0 };
       current.classes += 1;
-      current.bookings += item.attendees.length;
+      current.bookings += (item.attendees || []).length;
       trainerMap.set(trainerName, current);
     });
     res.json({
@@ -35,13 +35,13 @@ router.get('/analytics', roles('admin', 'trainer'), async (req, res, next) => {
         totalBookings,
         totalCapacity,
         fillRate: totalCapacity ? Math.round((totalBookings / totalCapacity) * 100) : 0,
-        waitlisted: classes.reduce((sum, item) => sum + item.waitlist.length, 0),
+        waitlisted: classes.reduce((sum, item) => sum + (item.waitlist || []).length, 0),
         attended,
         missed,
         attendanceRate: attended + missed ? Math.round((attended / (attended + missed)) * 100) : 0
       },
       topClasses: classes
-        .map(item => ({ title: item.title, bookings: item.attendees.length, waitlist: item.waitlist.length, capacity: item.capacity }))
+        .map(item => ({ title: item.title, bookings: (item.attendees || []).length, waitlist: (item.waitlist || []).length, capacity: item.capacity }))
         .sort((a, b) => b.bookings - a.bookings)
         .slice(0, 5),
       topTrainers: Array.from(trainerMap.values()).sort((a, b) => b.bookings - a.bookings).slice(0, 5)
@@ -108,6 +108,7 @@ router.patch('/classes/:id/attendance/:userId', roles('admin', 'trainer'), async
     const item = await FitnessClass.findOne(query);
     if (!item) return res.status(404).json({ message: 'Class not found' });
     if (!item.attendees.some(id => id.equals(req.params.userId))) return res.status(400).json({ message: 'Only booked members can be marked' });
+    if (!Array.isArray(item.attendance)) item.attendance = [];
     const existing = item.attendance.find(mark => mark.user.equals(req.params.userId));
     if (existing) {
       existing.status = req.body.status;
