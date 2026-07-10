@@ -15,13 +15,33 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 
 ## Screenshots
 
-| Home | Login | Classes |
-|---|---|---|
-| ![FitFlow home](docs/screenshots/home.png) | ![FitFlow login](docs/screenshots/login.png) | ![FitFlow classes](docs/screenshots/classes.png) |
+### Home
 
-| Dashboard | AI Coach | Admin manage |
-|---|---|---|
-| ![FitFlow dashboard](docs/screenshots/dashboard.png) | ![FitFlow AI coach](docs/screenshots/ai-coach.png) | ![FitFlow admin manage](docs/screenshots/admin-manage.png) |
+![FitFlow home](docs/screenshots/home.png)
+
+### Login
+
+![FitFlow login](docs/screenshots/login.png)
+
+### Classes
+
+![FitFlow classes](docs/screenshots/classes.png)
+
+### Class Detail
+
+![FitFlow class detail](docs/screenshots/class-detail.png)
+
+### Member Dashboard
+
+![FitFlow dashboard](docs/screenshots/dashboard.png)
+
+### AI Coach
+
+![FitFlow AI coach](docs/screenshots/ai-coach.png)
+
+### Admin Manage
+
+![FitFlow admin manage](docs/screenshots/admin-manage.png)
 
 ## Why this project exists
 
