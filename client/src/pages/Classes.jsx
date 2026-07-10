@@ -4,10 +4,10 @@ import { api } from '../api';
 import { useAuth } from '../auth-context';
 import { Empty, Icon, SkeletonGrid } from '../ui';
 
-function ClassCard({ item, index, onBook }) {
+function ClassCard({ item, index, onBook, actionLabel = 'Book' }) {
   return <article className="class-card" style={{'--accent': item.accent}}>
     <div className="class-art"><span>{String(index + 1).padStart(2, '0')}</span><div className="art-ring"/><b>{item.category.toUpperCase()}</b></div>
-    <div className="class-body"><div className="class-meta"><span>{item.level}</span><span><Icon name="clock" size={15}/>{item.duration} min</span></div><h2><Link to={`/classes/${item._id}`}>{item.title}</Link></h2><p>Trainer: {item.trainer ? <Link to={`/trainers/${item.trainer}`}>{item.trainerName}</Link> : item.trainerName}</p><div className="class-footer"><div><small>{item.schedule}</small><b>{item.spotsLeft} spots left</b></div><button onClick={() => onBook(item._id)}>Book <Icon name="arrow" size={17}/></button></div></div>
+    <div className="class-body"><div className="class-meta"><span>{item.level}</span><span><Icon name="clock" size={15}/>{item.duration} min</span></div><h2><Link to={`/classes/${item._id}`}>{item.title}</Link></h2><p>Trainer: {item.trainer ? <Link to={`/trainers/${item.trainer}`}>{item.trainerName}</Link> : item.trainerName}</p><div className="class-footer"><div><small>{item.schedule}</small><b>{item.spotsLeft} spots left</b></div><button onClick={() => onBook(item._id)}>{actionLabel} <Icon name="arrow" size={17}/></button></div></div>
   </article>;
 }
 
@@ -52,6 +52,6 @@ export function ClassDetail() {
       <article className="panel"><div className="panel-title"><div><span>SESSION</span><h2>What to expect</h2></div></div><div className="detail-facts"><span>{item.duration} minutes</span><span>{item.level}</span><span>{item.capacity} capacity</span><span>{item.category}</span></div><p className="detail-copy">This class is trainer-led and built for steady progress. FitFlow tracks booking capacity and waitlists automatically, while your AI Coach can plan around sessions you book.</p></article>
       <article className="panel"><div className="panel-title"><div><span>TRAINER</span><h2>{item.trainerName}</h2></div></div><p className="detail-copy">{item.trainerProfile?.headline || 'Verified FitFlow trainer.'}</p>{item.trainer && <Link className="button ghost" to={`/trainers/${item.trainer}`}>View trainer profile</Link>}</article>
     </div>
-    <section className="similar-classes"><h2>Similar classes</h2><div className="class-grid">{item.similar?.length ? item.similar.map((similar, index) => <ClassCard item={similar} index={index} onBook={(classId) => navigate(`/classes/${classId}`)} key={similar._id} />) : <Empty text="No similar classes yet." link="Browse classes" />}</div></section>
+    <section className="similar-classes"><h2>Similar classes</h2><div className="class-grid">{item.similar?.length ? item.similar.map((similar, index) => <ClassCard item={similar} index={index} actionLabel="View" onBook={(classId) => navigate(`/classes/${classId}`)} key={similar._id} />) : <Empty text="No similar classes yet." link="Browse classes" />}</div></section>
   </section>;
 }
