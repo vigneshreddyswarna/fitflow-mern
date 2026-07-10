@@ -37,11 +37,13 @@ async function seedDemoClasses() {
   await FitnessClass.updateMany({ isDemo: true, title: { $nin: demoTitles }, attendees: { $size: 0 }, waitlist: { $size: 0 } }, { $set: { cancelled: true } });
   await FitnessClass.bulkWrite(demoClasses.map((item, index) => {
     const trainer = trainers[index % Math.max(trainers.length, 1)];
+    const insertClass = demoClass(item);
+    if (trainer) delete insertClass.coach;
     return {
     updateOne: {
       filter: { title: item.title, category: item.category },
       update: {
-        $setOnInsert: demoClass(item),
+        $setOnInsert: insertClass,
         ...(trainer ? { $set: { trainer: trainer._id, coach: trainer.name } } : {})
       },
       upsert: true
