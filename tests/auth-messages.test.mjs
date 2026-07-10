@@ -12,4 +12,10 @@ describe('auth account guidance messages', () => {
 
     expect(message).toContain('sign up first');
   });
+
+  it('warns when a password reset tries to reuse the old password', () => {
+    const message = 'New password cannot be the same as your old password';
+
+    expect(message).toContain('cannot be the same');
+  });
 });

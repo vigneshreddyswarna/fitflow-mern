@@ -76,6 +76,7 @@ router.patch('/settings', auth, requireVerified, async (req, res, next) => {
       if (req.body.newPassword.length < 8) return res.status(400).json({ message: 'New password must be at least 8 characters' });
       const user = await User.findById(req.user.id).select('+password');
       if (!user || !(await bcrypt.compare(req.body.currentPassword, user.password))) return res.status(401).json({ message: 'Current password is incorrect' });
+      if (await bcrypt.compare(req.body.newPassword, user.password)) return res.status(400).json({ message: 'New password cannot be the same as your old password' });
       user.password = await bcrypt.hash(req.body.newPassword, 12);
       user.set(updates);
       await user.save();
@@ -146,6 +147,7 @@ router.post('/reset-password', async (req, res, next) => {
     const resetValue = String(req.body.code || req.body.token || '').trim();
     const user = await User.findOne({ email: req.body.email?.toLowerCase(), passwordResetToken: hashedToken(resetValue), passwordResetExpires: { $gt: Date.now() } }).select('+password +passwordResetToken +passwordResetExpires');
     if (!user) return res.status(400).json({ message: 'Reset code is invalid or expired' });
+    if (await bcrypt.compare(req.body.password, user.password)) return res.status(400).json({ message: 'New password cannot be the same as your old password' });
     user.password = await bcrypt.hash(req.body.password, 12); user.passwordResetToken = undefined; user.passwordResetExpires = undefined; await user.save();
     res.json({ message: 'Password updated successfully' });
   } catch (error) { next(error); }
