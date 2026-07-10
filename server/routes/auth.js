@@ -9,7 +9,7 @@ const { sendEmail } = require('../services/email');
 const { devOnlyCode } = require('../utils/dev-code');
 
 const tokenFor = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-const safeUser = (user) => ({ id: user._id, name: user.name, email: user.email, goal: user.goal, role: user.role, isEmailVerified: user.isEmailVerified, profile: user.profile, trainerProfile: user.trainerProfile });
+const safeUser = (user) => ({ id: user._id, name: user.name, email: user.email, goal: user.goal, role: user.role, isEmailVerified: user.isEmailVerified, demoAccount: user.demoAccount, profile: user.profile, trainerProfile: user.trainerProfile });
 const hashedToken = value => crypto.createHash('sha256').update(value).digest('hex');
 const otpCode = () => String(crypto.randomInt(100000, 1000000));
 const listFrom = value => String(value || '').split(',').map(item => item.trim()).filter(Boolean);

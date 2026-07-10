@@ -67,17 +67,19 @@ export default function Admin() {
 
   return <section className="dashboard section">
     <div className="dash-head"><div><p>{user.role.toUpperCase()} WORKSPACE</p><h1>Run FitFlow clearly.</h1></div></div>
+    {user.demoAccount && <div className="demo-banner">Demo manage access is read-only. Explore analytics, users, classes, rosters, and trainer assignments without changing production data.</div>}
     <AdminAnalytics overview={overview} analytics={analytics} />
     <div className="admin-tools"><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search users, classes, trainers..." />{user.role === 'admin' && <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)}><option value="all">All roles</option><option value="member">Members</option><option value="trainer">Trainers</option><option value="admin">Admins</option></select>}</div>
     <div className="admin-grid">
-      <AdminClassForm user={user} trainers={trainers} onSubmit={addClass} />
-      {user.role === 'admin' && <AdminPeople users={filteredUsers} onRoleChange={changeRole} />}
+      <AdminClassForm user={user} trainers={trainers} onSubmit={addClass} readOnly={user.demoAccount} />
+      {user.role === 'admin' && <AdminPeople users={filteredUsers} onRoleChange={changeRole} readOnly={user.demoAccount} />}
     </div>
     <AdminClassManager
       classes={filteredClasses}
       trainers={trainers}
       user={user}
       trainerName={trainerName}
+      readOnly={user.demoAccount}
       onUpdate={updateClass}
       onCancel={id => {
         const item = classes.find(klass => klass._id === id);

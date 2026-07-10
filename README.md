@@ -113,11 +113,11 @@ Recommended demo setup:
 
 | Role | Purpose |
 |---|---|
-| Demo admin | Shows Manage, analytics, user roles, and class operations |
-| Demo trainer | Shows assigned sessions, roster, waitlist, and attendance marking |
+| Demo admin | Shows Manage, analytics, user roles, and class operations in read-only mode |
+| Demo trainer | Shows assigned sessions, roster, waitlist, and attendance marking in read-only mode |
 | Demo member | Shows signup/login flow, bookings, dashboard, settings, and AI Coach |
 
-Use non-personal email addresses for these accounts and keep the actual passwords only in Render/GitHub secrets, not in the README.
+Use non-personal email addresses for these accounts and keep the actual passwords only in Render/GitHub secrets, not in the README. Demo admin/trainer accounts are flagged as demo accounts, so risky manage actions such as role changes, class edits, class cancellation, and attendance mutations are blocked server-side.
 
 ## Optional service configuration
 

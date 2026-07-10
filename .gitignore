@@ -1,5 +1,6 @@
 node_modules
 .env
+.demo-credentials.local
 client/dist
 .pnpm-store
 npm-debug.log*

@@ -25,6 +25,7 @@ async function createVerifiedUser({ name, role = 'member' }) {
     email: emailFor(name.toLowerCase().replace(/\s+/g, '.')),
     password,
     role,
+    demoAccount: false,
     isEmailVerified: true
   });
 }
@@ -120,6 +121,22 @@ run('database-backed product flows', () => {
 
     expect(response.body.role).toBe('trainer');
     await expect(User.findById(member._id).then(user => user.role)).resolves.toBe('trainer');
+  });
+
+  it('keeps demo admin accounts read-only for risky admin changes', async () => {
+    const demoAdmin = await createVerifiedUser({ name: 'Integration Demo Admin', role: 'admin' });
+    const member = await createVerifiedUser({ name: 'Integration Demo Target' });
+    demoAdmin.demoAccount = true;
+    await demoAdmin.save();
+
+    const response = await request(app)
+      .patch(`/api/admin/users/${member._id}/role`)
+      .set('Authorization', `Bearer ${tokenFor(demoAdmin)}`)
+      .send({ role: 'trainer' })
+      .expect(403);
+
+    expect(response.body.message).toBe('Demo accounts are read-only for admin and trainer changes');
+    await expect(User.findById(member._id).then(user => user.role)).resolves.toBe('member');
   });
 
   it('requires admin-created classes to use a verified trainer account', async () => {
