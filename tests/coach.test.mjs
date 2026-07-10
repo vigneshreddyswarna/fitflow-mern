@@ -12,7 +12,15 @@ describe('Adaptive coach fallback', () => {
     expect(plan.source).toBe('rules');
     expect(plan.sessions).toHaveLength(3);
     expect(plan.sessions.every(session => session.minutes === 35)).toBe(true);
+    expect(plan.sessions[0].instructions).toContain('Warm up');
+    expect(plan.sessions[0].instructions).toContain('Progression');
     expect(validPlan(plan)).toBe(true);
+  });
+
+  it('uses available classes as context without telling users to book them', () => {
+    const plan = rulesPlan(user, [], [{ title: 'Power Hour', category: 'Strength', schedule: 'Mon - 6:00 PM', duration: 50, level: 'Intermediate' }]);
+    expect(plan.sessions.map(session => session.instructions).join(' ')).not.toMatch(/Book this/i);
+    expect(plan.summary).toContain('stands on its own');
   });
 
   it('rejects malformed AI output', () => {
