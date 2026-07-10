@@ -7,6 +7,8 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 - Real MERN product flow: signup, email OTP verification, login, dashboard, class booking, workout logging, settings, and admin/trainer operations.
 - Production-minded auth: JWT sessions, bcrypt password hashing, protected routes, role-based access, verified-email guards, and production-safe OTP responses.
 - Class operations that go beyond CRUD: capacity checks, atomic booking for final spots, waitlists, cancellation, trainer ownership, and admin role management.
+- Trainer operations: assigned-session dashboards, booked-member rosters, waitlist visibility, and attendance/missed check-ins.
+- Admin analytics for booking demand, capacity fill, attendance rate, waitlists, top classes, and trainer load.
 - Public trainer profile pages with specialties, bio, certifications, and assigned classes.
 - AI Coach feature with graceful fallback: OpenAI can generate adaptive plans, but the rules engine still works without an API key.
 - Portfolio polish: responsive React UI, PWA metadata, CI workflow, automated tests, security headers, rate limiting, and clean project structure.
@@ -41,6 +43,9 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 - Safe deterministic AI Coach fallback when no AI key is configured
 - Admin and trainer role-based workspaces
 - Real dated sessions, editing, cancellation, waitlists, trainer ownership, and automatic promotion
+- Class detail pages with trainer context, capacity, booking, and similar classes
+- Trainer attendance tracking for attended/missed member check-ins
+- Admin analytics for booking demand, attendance, waitlists, and trainer workload
 - Account settings for goals, training profile, trainer profile, and password updates
 - Public trainer profiles and assigned class listings
 - Email OTP verification, OTP password reset, and Google sign-in API support
@@ -100,13 +105,13 @@ For recruiter demos, create separate throwaway accounts instead of sharing a per
 ALLOW_DEMO_ACCOUNTS=true pnpm seed:demo
 ```
 
-Set `DEMO_ADMIN_EMAIL`, `DEMO_ADMIN_PASSWORD`, `DEMO_TRAINER_EMAIL`, `DEMO_TRAINER_PASSWORD`, `DEMO_MEMBER_EMAIL`, and `DEMO_MEMBER_PASSWORD` first. Keep demo passwords out of the README and reset or remove demo accounts after interviews.
+Set `DEMO_ADMIN_EMAIL`, `DEMO_ADMIN_PASSWORD`, `DEMO_TRAINER_EMAIL`, `DEMO_TRAINER_PASSWORD`, `DEMO_MEMBER_EMAIL`, and `DEMO_MEMBER_PASSWORD` first. Keep demo passwords out of public commits if they use real admin privileges. For portfolio sharing, prefer throwaway demo accounts and rotate the passwords after interviews.
 
 ## Optional service configuration
 
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enables generated adaptive plans. Without them, the safe rules engine creates plans.
 - `SMTP_*`: sends verification, reset, and booking emails. Brevo SMTP works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key.
-- `BREVO_API_KEY` and `BREVO_SENDER_EMAIL`: optional HTTP API email sending. Use this if a hosting provider blocks or times out on SMTP ports.
+- `BREVO_API_KEY` and `BREVO_SENDER_EMAIL`: HTTP API email sending. Use this on Render if SMTP ports time out; it is the most reliable production OTP option.
 - `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`: enables hosted membership checkout.
 - `GOOGLE_CLIENT_ID`: enables the verified Google token endpoint.
 - `APP_URL`: the frontend origin used in email and payment return links.
@@ -133,6 +138,7 @@ pnpm seed:admin
 | POST | `/api/auth/verify-reset-code` | Confirm reset OTP |
 | POST | `/api/auth/reset-password` | Save a new password |
 | GET | `/api/classes` | List and seed classes |
+| GET | `/api/classes/:id` | View class details and similar classes |
 | GET | `/api/classes/stats/summary` | Public homepage stats |
 | POST | `/api/classes/:id/book` | Book a class |
 | GET | `/api/classes/mine/booked` | List the member's bookings |
@@ -141,6 +147,8 @@ pnpm seed:admin
 | GET/POST | `/api/workouts` | List or log workouts |
 | DELETE | `/api/workouts/:id` | Remove a workout |
 | GET/PATCH/DELETE | `/api/admin/classes` | Admin/trainer class operations |
+| GET | `/api/admin/analytics` | Admin/trainer booking and attendance analytics |
+| PATCH | `/api/admin/classes/:id/attendance/:userId` | Mark a booked member attended or missed |
 
 ## Deployment checklist
 
@@ -155,6 +163,7 @@ pnpm seed:admin
 
 - `client/src/App.jsx`: route composition and shared authenticated page flows.
 - `client/src/pages/Home.jsx`: portfolio-facing homepage experience.
+- `client/src/pages/Classes.jsx`: class catalog and class detail pages.
 - `client/src/pages/Admin.jsx`: admin/trainer workspace for role and class operations.
 - `client/src/ui.jsx`: reusable UI primitives such as icons, stats, empty states, skeletons, and confirmation modals.
 - `client/src/auth-context.jsx`: shared authenticated user context.

@@ -4,6 +4,7 @@ import { api, getToken, setToken } from './api';
 import { AuthContext, useAuth } from './auth-context';
 import { ConfirmModal, Empty, Icon, SkeletonGrid, Stat } from './ui';
 import Admin from './pages/Admin';
+import Classes, { ClassDetail } from './pages/Classes';
 import Home from './pages/Home';
 
 const ActivityChart = lazy(() => import('./ActivityChart'));
@@ -26,6 +27,7 @@ function App() {
     <main id="main-content"><Routes>
       <Route path="/" element={<Home />} />
       <Route path="/classes" element={<Classes />} />
+      <Route path="/classes/:id" element={<ClassDetail />} />
       <Route path="/trainers/:id" element={<TrainerProfile />} />
       <Route path="/auth" element={user?.isEmailVerified ? <Navigate to="/dashboard" /> : <Auth />} />
       <Route path="/dashboard" element={user?.isEmailVerified ? <Dashboard /> : <Navigate to="/auth" />} />
@@ -56,28 +58,6 @@ function Header() {
     </nav>
     <button className="menu" onClick={() => setOpen(!open)} aria-label="Toggle menu"><Icon name={open ? 'x' : 'menu'} /></button>
   </div></header>;
-}
-
-function Classes() {
-  const { user, notify } = useAuth();
-  const navigate = useNavigate();
-  const [classes, setClasses] = useState([]);
-  const [filter, setFilter] = useState('All');
-  const [loading, setLoading] = useState(true);
-  useEffect(() => { api('/classes').then(setClasses).catch(e => notify(e.message)).finally(() => setLoading(false)); }, []);
-  const book = async (id) => {
-    if (!user) return navigate('/auth');
-    try { const data = await api(`/classes/${id}/book`, { method: 'POST' }); notify(data.message); setClasses(c => c.map(x => x._id === id ? { ...x, spotsLeft: data.spotsLeft ?? x.spotsLeft } : x)); } catch (e) { notify(e.message); }
-  };
-  const categories = ['All', ...new Set(classes.map(c => c.category))];
-  const shown = filter === 'All' ? classes : classes.filter(c => c.category === filter);
-  return <section className="page section"><div className="page-head"><div><div className="eyebrow dark"><span />Move your way</div><h1>Find a class<br/><em>worth showing up for.</em></h1></div><p>Small groups, thoughtful coaching, and a level for every starting point.</p></div>
-    <div className="filters">{categories.map(c => <button className={filter === c ? 'active' : ''} onClick={() => setFilter(c)} key={c}>{c}</button>)}</div>
-    {loading ? <SkeletonGrid count={4} className="class-grid" /> : <div className="class-grid">{shown.map((item, index) => <article className="class-card" key={item._id} style={{'--accent': item.accent}}>
-      <div className="class-art"><span>{String(index + 1).padStart(2, '0')}</span><div className="art-ring"/><b>{item.category.toUpperCase()}</b></div>
-      <div className="class-body"><div className="class-meta"><span>{item.level}</span><span><Icon name="clock" size={15}/>{item.duration} min</span></div><h2>{item.title}</h2><p>Trainer: {item.trainer ? <Link to={`/trainers/${item.trainer}`}>{item.trainerName}</Link> : item.trainerName}</p><div className="class-footer"><div><small>{item.schedule}</small><b>{item.spotsLeft} spots left</b></div><button onClick={() => book(item._id)}>Book <Icon name="arrow" size={17}/></button></div></div>
-    </article>)}</div>}
-  </section>;
 }
 
 function TrainerProfile() {

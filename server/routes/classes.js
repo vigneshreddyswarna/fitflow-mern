@@ -57,6 +57,7 @@ const publicClass = item => {
     ...item,
     trainerName: trainer?.name || item.coach || 'FitFlow Trainer',
     trainer: trainer?._id || item.trainer,
+    trainerProfile: trainer?.trainerProfile,
     spotsLeft: item.capacity - item.attendees.length
   };
 };
@@ -78,6 +79,15 @@ router.get('/stats/summary', async (_req, res, next) => {
       Workout.countDocuments()
     ]);
     res.json({ members, classes, workouts });
+  } catch (error) { next(error); }
+});
+
+router.get('/:id', async (req, res, next) => {
+  try {
+    const item = await FitnessClass.findOne({ _id: req.params.id, cancelled: false }).populate('trainer', 'name trainerProfile').lean();
+    if (!item) return res.status(404).json({ message: 'Class not found' });
+    const similar = await FitnessClass.find({ _id: { $ne: item._id }, category: item.category, cancelled: false }).populate('trainer', 'name').limit(3).lean();
+    res.json({ ...publicClass(item), similar: similar.map(publicClass) });
   } catch (error) { next(error); }
 });
 

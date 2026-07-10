@@ -13,6 +13,11 @@ const fitnessClassSchema = new mongoose.Schema({
   capacity: { type: Number, default: 16 },
   attendees: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   waitlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  attendance: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    status: { type: String, enum: ['attended', 'missed'], required: true },
+    markedAt: { type: Date, default: Date.now }
+  }],
   price: { type: Number, min: 0, default: 0 },
   cancelled: { type: Boolean, default: false },
   isDemo: { type: Boolean, default: false },

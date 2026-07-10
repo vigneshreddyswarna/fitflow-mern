@@ -153,4 +153,29 @@ run('database-backed product flows', () => {
     expect(String(response.body.trainer)).toBe(String(trainer._id));
     expect(response.body.coach).toBe(trainer.name);
   });
+
+  it('lets a trainer mark booked-member attendance for their own class', async () => {
+    const trainer = await createVerifiedUser({ name: 'Integration Attendance Trainer', role: 'trainer' });
+    const member = await createVerifiedUser({ name: 'Integration Attendance Member' });
+    const klass = await FitnessClass.create({
+      title: 'Integration Attendance Session',
+      category: 'Mobility',
+      coach: trainer.name,
+      trainer: trainer._id,
+      schedule: 'Fri - 7:00 AM',
+      startsAt: new Date(Date.now() + 86400000),
+      duration: 40,
+      level: 'Beginner',
+      capacity: 10,
+      attendees: [member._id]
+    });
+
+    const response = await request(app)
+      .patch(`/api/admin/classes/${klass._id}/attendance/${member._id}`)
+      .set('Authorization', `Bearer ${tokenFor(trainer)}`)
+      .send({ status: 'attended' })
+      .expect(200);
+
+    expect(response.body.attendance[0].status).toBe('attended');
+  });
 });
