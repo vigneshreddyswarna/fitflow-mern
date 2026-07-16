@@ -63,6 +63,11 @@ run('database-backed product flows', () => {
       .post('/api/auth/verify-reset-code')
       .send({ email, code: reset.body.resetCode })
       .expect(200);
+    const reused = await request(app)
+      .post('/api/auth/reset-password')
+      .send({ email, code: reset.body.resetCode, password: 'Password@12345' })
+      .expect(400);
+    expect(reused.body.message).toBe('New password cannot be the same as your old password');
     await request(app)
       .post('/api/auth/reset-password')
       .send({ email, code: reset.body.resetCode, password: 'NewPassword@12345' })
