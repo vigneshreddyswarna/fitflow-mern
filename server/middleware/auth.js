@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = function auth(req, _res, next) {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.cookies?.fitflow_session || req.header('Authorization')?.replace('Bearer ', '');
     if (!token) throw new Error('Please sign in to continue');
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     require('../models/User').findById(decoded.id).select('name role isEmailVerified demoAccount').lean().then(user => {

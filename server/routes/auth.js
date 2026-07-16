@@ -7,9 +7,13 @@ const auth = require('../middleware/auth');
 const { requireVerified } = require('../middleware/auth');
 const { sendEmail } = require('../services/email');
 const { devOnlyCode } = require('../utils/dev-code');
+const validate = require('../middleware/validate');
+const schemas = require('../validation/schemas');
 
 const tokenFor = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
-const safeUser = (user) => ({ id: user._id, name: user.name, email: user.email, goal: user.goal, role: user.role, isEmailVerified: user.isEmailVerified, demoAccount: user.demoAccount, profile: user.profile, trainerProfile: user.trainerProfile });
+const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000, path: '/' };
+const signIn = (res, user) => res.cookie('fitflow_session', tokenFor(user), cookieOptions);
+const safeUser = (user) => ({ id: user._id, name: user.name, email: user.email, goal: user.goal, role: user.role, isEmailVerified: user.isEmailVerified, demoAccount: user.demoAccount, membership: user.membership, profile: user.profile, trainerProfile: user.trainerProfile });
 const hashedToken = value => crypto.createHash('sha256').update(value).digest('hex');
 const otpCode = () => String(crypto.randomInt(100000, 1000000));
 const listFrom = value => String(value || '').split(',').map(item => item.trim()).filter(Boolean);
@@ -22,31 +26,31 @@ async function sendVerificationOtp(user, code) {
   });
 }
 
-router.post('/register', async (req, res, next) => {
+router.post('/register', validate(schemas.register), async (req, res, next) => {
   try {
     const { name, email, password, goal } = req.body;
     if (!name || !email || !password) return res.status(400).json({ message: 'Name, email and password are required' });
-    if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters' });
     if (await User.exists({ email: email.toLowerCase() })) return res.status(409).json({ message: 'An account with this email already exists' });
     const verificationCode = otpCode();
     const user = await User.create({ name, email, password: await bcrypt.hash(password, 12), goal, emailVerificationCode: hashedToken(verificationCode), emailVerificationExpires: Date.now() + 10 * 60 * 1000 });
     await sendVerificationOtp(user, verificationCode);
-    res.status(201).json({ token: tokenFor(user), user: safeUser(user), verificationRequired: true, ...devOnlyCode('verificationCode', verificationCode) });
+    signIn(res, user).status(201).json({ user: safeUser(user), verificationRequired: true, ...devOnlyCode('verificationCode', verificationCode) });
   } catch (error) { next(error); }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', validate(schemas.login), async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select('+password');
-    if (!user) return res.status(404).json({ message: 'No account found with this email. Please create an account first.' });
-    if (!(await bcrypt.compare(req.body.password || '', user.password))) return res.status(401).json({ message: 'Incorrect password' });
-    res.json({ token: tokenFor(user), user: safeUser(user) });
+    if (!user || !(await bcrypt.compare(req.body.password || '', user.password))) return res.status(401).json({ message: 'Email or password is incorrect' });
+    signIn(res, user).json({ user: safeUser(user) });
   } catch (error) { next(error); }
 });
 
 router.get('/me', auth, async (req, res, next) => {
   try { res.json({ user: safeUser(await User.findById(req.user.id)) }); } catch (error) { next(error); }
 });
+
+router.post('/logout', (_req, res) => res.clearCookie('fitflow_session', { ...cookieOptions, maxAge: undefined }).json({ message: 'Signed out' }));
 
 router.patch('/profile', auth, requireVerified, async (req, res, next) => {
   try {
@@ -87,7 +91,7 @@ router.patch('/settings', auth, requireVerified, async (req, res, next) => {
   } catch (error) { error.status = 400; next(error); }
 });
 
-router.post('/verify-email', async (req, res, next) => {
+router.post('/verify-email', validate(schemas.verifyCode), async (req, res, next) => {
   try {
     const email = req.body.email?.toLowerCase();
     const code = String(req.body.code || '').trim();
@@ -106,7 +110,7 @@ router.post('/verify-email', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/resend-verification', async (req, res, next) => {
+router.post('/resend-verification', validate(schemas.emailOnly), async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select('+emailVerificationCode +emailVerificationExpires');
     if (!user) return res.json({ message: 'If that account exists, a new code has been sent' });
@@ -120,10 +124,10 @@ router.post('/resend-verification', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/forgot-password', async (req, res, next) => {
+router.post('/forgot-password', validate(schemas.emailOnly), async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
-    if (!user) return res.status(404).json({ message: 'No account found with this email. Please sign up first.' });
+    if (!user) return res.json({ message: 'If that account exists, a reset code has been sent' });
     let resetCode;
     resetCode = otpCode();
     user.passwordResetToken = hashedToken(resetCode); user.passwordResetExpires = Date.now() + 10 * 60 * 1000; await user.save();
@@ -132,7 +136,7 @@ router.post('/forgot-password', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/verify-reset-code', async (req, res, next) => {
+router.post('/verify-reset-code', validate(schemas.verifyResetCode), async (req, res, next) => {
   try {
     const code = String(req.body.code || '').trim();
     const user = await User.findOne({ email: req.body.email?.toLowerCase(), passwordResetToken: hashedToken(code), passwordResetExpires: { $gt: Date.now() } }).select('+passwordResetToken +passwordResetExpires');
@@ -141,9 +145,8 @@ router.post('/verify-reset-code', async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
-router.post('/reset-password', async (req, res, next) => {
+router.post('/reset-password', validate(schemas.resetPassword), async (req, res, next) => {
   try {
-    if (!req.body.password || req.body.password.length < 8) return res.status(400).json({ message: 'Password must be at least 8 characters' });
     const resetValue = String(req.body.code || req.body.token || '').trim();
     const user = await User.findOne({ email: req.body.email?.toLowerCase(), passwordResetToken: hashedToken(resetValue), passwordResetExpires: { $gt: Date.now() } }).select('+password +passwordResetToken +passwordResetExpires');
     if (!user) return res.status(400).json({ message: 'Reset code is invalid or expired' });
@@ -161,7 +164,7 @@ router.post('/google', async (req, res, next) => {
     if (!response.ok || profile.aud !== process.env.GOOGLE_CLIENT_ID || profile.email_verified !== 'true') return res.status(401).json({ message: 'Google sign-in could not be verified' });
     let user = await User.findOne({ email: profile.email });
     if (!user) user = await User.create({ name: profile.name, email: profile.email, googleId: profile.sub, isEmailVerified: true, password: await bcrypt.hash(crypto.randomBytes(32).toString('hex'), 12) });
-    res.json({ token: tokenFor(user), user: safeUser(user) });
+    signIn(res, user).json({ user: safeUser(user) });
   } catch (error) { next(error); }
 });
 

@@ -1,3 +1,4 @@
+import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 export const Icon = ({ name, size = 20 }) => {
@@ -26,12 +27,29 @@ export const Empty = ({ text, link, action }) => <div className="empty"><span><I
 export const SkeletonGrid = ({ count = 4, className = '' }) => <div className={`skeleton-grid ${className}`}>{Array.from({ length: count }, (_, index) => <div className="skeleton-card" key={index}><span/><b/><p/><p/></div>)}</div>;
 
 export function ConfirmModal({ title, message, confirmLabel = 'Confirm', onConfirm, onCancel }) {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const previous = document.activeElement;
+    const dialog = dialogRef.current;
+    dialog?.querySelector('button')?.focus();
+    const onKeyDown = event => {
+      if (event.key === 'Escape') onCancel();
+      if (event.key !== 'Tab') return;
+      const focusable = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')];
+      const first = focusable[0];
+      const last = focusable.at(-1);
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => { document.removeEventListener('keydown', onKeyDown); previous?.focus?.(); };
+  }, [onCancel]);
   return <div className="modal-backdrop" onMouseDown={onCancel}>
-    <div className="modal confirm-modal" onMouseDown={event => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div ref={dialogRef} className="modal confirm-modal" onMouseDown={event => event.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message">
       <button type="button" className="modal-close" onClick={onCancel} aria-label="Close"><Icon name="x"/></button>
       <span className="form-kicker">PLEASE CONFIRM</span>
       <h2 id="confirm-title">{title}</h2>
-      <p>{message}</p>
+      <p id="confirm-message">{message}</p>
       <div className="manager-actions"><button type="button" className="danger-btn" onClick={onConfirm}>{confirmLabel}</button><button type="button" className="button ghost" onClick={onCancel}>Keep it</button></div>
     </div>
   </div>;

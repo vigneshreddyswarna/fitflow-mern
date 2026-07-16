@@ -3,4 +3,7 @@ node_modules
 .demo-credentials.local
 client/dist
 .pnpm-store
+coverage
+test-results
+playwright-report
 npm-debug.log*

@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 
-describe('auth account guidance messages', () => {
-  it('uses a clear login message when an email is not registered', () => {
-    const message = 'No account found with this email. Please create an account first.';
+describe('auth privacy messages', () => {
+  it('does not reveal whether a login email is registered', () => {
+    const message = 'Email or password is incorrect';
 
-    expect(message).toContain('create an account');
+    expect(message).not.toMatch(/account found|registered/i);
   });
 
-  it('uses a clear forgot-password message when a first-time email is entered', () => {
-    const message = 'No account found with this email. Please sign up first.';
+  it('does not reveal whether a password-reset email is registered', () => {
+    const message = 'If that account exists, a reset code has been sent';
 
-    expect(message).toContain('sign up first');
+    expect(message).toContain('If that account exists');
   });
 
   it('warns when a password reset tries to reuse the old password', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { api, setToken } from '../api';
+import { api } from '../api';
 import { useAuth } from '../auth-context';
 import { Icon } from '../ui';
 import OtpField from '../components/OtpField';
@@ -91,7 +91,7 @@ export default function Auth() {
     delete data.authPassword;
     try {
       const result = await api(`/auth/${mode}`, { method: 'POST', body: JSON.stringify(data) });
-      setToken(result.token); setUser(result.user);
+      setUser(result.user);
       if (!result.user.isEmailVerified) {
         setPendingEmail(result.user.email);
         if (mode === 'login') {
@@ -113,7 +113,7 @@ export default function Auth() {
     <div className="auth-form-wrap"><form className="auth-form" onSubmit={submit} autoComplete="off"><span className="form-kicker">{mode === 'register' ? 'CREATE YOUR ACCOUNT' : 'WELCOME BACK'}</span><h2>{mode === 'register' ? "Let's build momentum." : 'Keep it moving.'}</h2>
       {mode === 'register' && <label>Full name<input name="name" placeholder="Your name" required /></label>}
       <label>Email address<input name="authEmail" type="email" placeholder="you@example.com" autoComplete="off" autoCapitalize="none" spellCheck="false" required /></label>
-      <PasswordField minLength="6" placeholder="At least 6 characters" />
+      <PasswordField minLength="8" placeholder="At least 8 characters" />
       {mode === 'login' && <button className="forgot-link" type="button" onClick={forgot}>Forgot password?</button>}
       {mode === 'register' && <label>Your main goal<select name="goal"><option>Build strength</option><option>Lose weight</option><option>Improve fitness</option><option>Stay active</option></select></label>}
       <button className="button primary full" disabled={busy}>{busy ? 'One moment...' : mode === 'register' ? 'Create free account' : 'Log in'}<Icon name="arrow" /></button>

@@ -1,35 +1,36 @@
-import { useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import { api, getToken, setToken } from './api';
+import { api } from './api';
 import { AuthContext } from './auth-context';
 import { Icon } from './ui';
-import Admin from './pages/Admin';
-import Auth from './pages/Auth';
-import Coach from './pages/Coach';
-import Classes, { ClassDetail } from './pages/Classes';
-import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
-import Settings from './pages/Settings';
-import TrainerProfile from './pages/TrainerProfile';
-import AccountAction from './pages/AccountAction';
 import Header from './components/Header';
+
+const Admin = lazy(() => import('./pages/Admin'));
+const Auth = lazy(() => import('./pages/Auth'));
+const Coach = lazy(() => import('./pages/Coach'));
+const Classes = lazy(() => import('./pages/Classes'));
+const ClassDetail = lazy(() => import('./pages/Classes').then(module => ({ default: module.ClassDetail })));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Settings = lazy(() => import('./pages/Settings'));
+const TrainerProfile = lazy(() => import('./pages/TrainerProfile'));
+const AccountAction = lazy(() => import('./pages/AccountAction'));
 
 function App() {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(Boolean(getToken()));
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
 
   useEffect(() => {
-    if (!getToken()) return;
-    api('/auth/me').then(({ user }) => setUser(user)).catch(() => setToken(null)).finally(() => setLoading(false));
+    api('/auth/me').then(({ user }) => setUser(user)).catch(() => setUser(null)).finally(() => setLoading(false));
   }, []);
   const notify = (message) => { setToast(message); setTimeout(() => setToast(''), 2800); };
-  const auth = useMemo(() => ({ user, setUser, logout: () => { setToken(null); setUser(null); }, notify }), [user]);
+  const auth = useMemo(() => ({ user, setUser, logout: async () => { await api('/auth/logout', { method: 'POST' }).catch(() => {}); setUser(null); }, notify }), [user]);
 
   if (loading) return <div className="loader"><span /></div>;
   return <AuthContext.Provider value={auth}>
     <Header />
-    <main id="main-content"><Routes>
+    <main id="main-content"><Suspense fallback={<div className="loader" aria-label="Loading page"><span /></div>}><Routes>
       <Route path="/" element={<Home />} />
       <Route path="/classes" element={<Classes />} />
       <Route path="/classes/:id" element={<ClassDetail />} />
@@ -42,8 +43,8 @@ function App() {
       <Route path="/verify-email" element={<AccountAction type="verify" />} />
       <Route path="/reset-password" element={<AccountAction type="reset" />} />
       <Route path="*" element={<Navigate to="/" />} />
-    </Routes></main>
-    {toast && <div className="toast"><Icon name="check" />{toast}</div>}
+    </Routes></Suspense></main>
+    {toast && <div className="toast" role="status" aria-live="polite"><Icon name="check" />{toast}</div>}
   </AuthContext.Provider>;
 }
 
