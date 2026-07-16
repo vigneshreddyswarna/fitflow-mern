@@ -16,8 +16,12 @@ router.get('/plan', async (req, res, next) => {
 router.post('/plan', async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).lean();
-    const [workouts, classes] = await Promise.all([Workout.find({ user: req.user.id }).sort({ completedAt: -1 }).limit(20).lean(), FitnessClass.find({ startsAt: { $gte: new Date() }, cancelled: false }).lean()]);
-    const generated = await generatePlan(user, workouts, classes);
+    const [workouts, bookedClasses, classes] = await Promise.all([
+      Workout.find({ user: req.user.id }).sort({ completedAt: -1 }).limit(20).lean(),
+      FitnessClass.find({ attendees: req.user.id, cancelled: false }).lean(),
+      FitnessClass.find({ startsAt: { $gte: new Date() }, cancelled: false }).lean()
+    ]);
+    const generated = await generatePlan(user, workouts, classes, bookedClasses);
     const weekOf = new Date(); weekOf.setHours(0, 0, 0, 0);
     const plan = await CoachingPlan.create({ user: req.user.id, weekOf, ...generated });
     await Notification.create({ user: req.user.id, type: 'plan', title: 'Your week is ready', message: generated.summary });
