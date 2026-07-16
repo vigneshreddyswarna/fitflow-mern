@@ -33,21 +33,39 @@ const demoClass = item => ({ ...item, isDemo: true });
 
 async function seedDemoClasses() {
   const demoTitles = demoClasses.map(item => item.title);
+  const trainers = await User.find({ role: 'trainer', isEmailVerified: true }).select('_id name').sort({ name: 1 }).lean();
   await FitnessClass.updateMany({ isDemo: true, title: { $nin: demoTitles }, attendees: { $size: 0 }, waitlist: { $size: 0 } }, { $set: { cancelled: true } });
-  await FitnessClass.bulkWrite(demoClasses.map(item => ({
+  await FitnessClass.bulkWrite(demoClasses.map((item, index) => {
+    const trainer = trainers[index % Math.max(trainers.length, 1)];
+    const insertClass = demoClass(item);
+    if (trainer) delete insertClass.coach;
+    return {
     updateOne: {
       filter: { title: item.title, category: item.category },
-      update: { $setOnInsert: demoClass(item) },
+      update: {
+        $setOnInsert: insertClass,
+        ...(trainer ? { $set: { trainer: trainer._id, coach: trainer.name } } : {})
+      },
       upsert: true
     }
-  })));
+  }; }));
 }
+
+const publicClass = item => {
+  const trainer = item.trainer && typeof item.trainer === 'object' ? item.trainer : null;
+  return {
+    ...item,
+    trainerName: trainer?.name || item.coach || 'FitFlow Trainer',
+    trainer: trainer?._id || item.trainer,
+    spotsLeft: item.capacity - item.attendees.length
+  };
+};
 
 router.get('/', async (_req, res, next) => {
   try {
     await seedDemoClasses();
-    const classes = await FitnessClass.find({ cancelled: false }).sort({ startsAt: 1 }).lean();
-    res.json(classes.map(item => ({ ...item, spotsLeft: item.capacity - item.attendees.length })));
+    const classes = await FitnessClass.find({ cancelled: false }).populate('trainer', 'name trainerProfile').sort({ startsAt: 1 }).lean();
+    res.json(classes.map(publicClass));
   } catch (error) { next(error); }
 });
 

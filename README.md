@@ -11,6 +11,16 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 - AI Coach feature with graceful fallback: OpenAI can generate adaptive plans, but the rules engine still works without an API key.
 - Portfolio polish: responsive React UI, PWA metadata, CI workflow, automated tests, security headers, rate limiting, and clean project structure.
 
+## Screenshots
+
+| Home | Login | Classes |
+|---|---|---|
+| ![FitFlow home](docs/screenshots/home.png) | ![FitFlow login](docs/screenshots/login.png) | ![FitFlow classes](docs/screenshots/classes.png) |
+
+| Dashboard | AI Coach | Admin manage |
+|---|---|---|
+| ![FitFlow dashboard](docs/screenshots/dashboard.png) | ![FitFlow AI coach](docs/screenshots/ai-coach.png) | ![FitFlow admin manage](docs/screenshots/admin-manage.png) |
+
 ## Why this project exists
 
 Many fitness products focus on intense short-term plans. FitFlow focuses on repeatable habits: make a plan, show up, and see momentum grow. It upgrades the original static FitZone site into a real product with persistent user data.
@@ -43,7 +53,7 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 
 React, React Router, Recharts, Vite, Node.js, Express, MongoDB, Mongoose, JWT, and bcrypt.
 
-Optional integrations use OpenAI, Stripe, Google Identity, and SMTP/Brevo email delivery. The AI Coach remains functional without those services.
+Optional integrations use OpenAI, Stripe, Google Identity, and Brevo email delivery. The AI Coach remains functional without those services.
 
 ## Run locally
 
@@ -68,6 +78,12 @@ npm run dev
 
 Run automated tests with `pnpm test` and create a production build with `pnpm build`.
 
+Database-backed integration tests are included for signup OTP, forgot-password OTP, booking/waitlist, and admin role changes. They run only when a separate test database is configured:
+
+```bash
+INTEGRATION_MONGODB_URI=mongodb://127.0.0.1:27017/fitflow-integration pnpm test
+```
+
 ## Demo access
 
 Create the admin account locally with:
@@ -78,10 +94,19 @@ pnpm seed:admin
 
 Use the values you set in `.env` for `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Admin users can open **Manage**, promote members to trainers/admins, create classes, edit classes, and cancel classes. Trainers can open **Manage** and edit only their own assigned classes.
 
+For recruiter demos, create separate throwaway accounts instead of sharing a personal admin login:
+
+```bash
+ALLOW_DEMO_ACCOUNTS=true pnpm seed:demo
+```
+
+Set `DEMO_ADMIN_EMAIL`, `DEMO_ADMIN_PASSWORD`, `DEMO_TRAINER_EMAIL`, `DEMO_TRAINER_PASSWORD`, `DEMO_MEMBER_EMAIL`, and `DEMO_MEMBER_PASSWORD` first. Keep demo passwords out of the README and reset or remove demo accounts after interviews.
+
 ## Optional service configuration
 
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enables generated adaptive plans. Without them, the safe rules engine creates plans.
-- `SMTP_*`: sends verification, reset, and booking emails. Brevo works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key. Without an email provider, messages are printed as local previews.
+- `SMTP_*`: sends verification, reset, and booking emails. Brevo SMTP works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key.
+- `BREVO_API_KEY` and `BREVO_SENDER_EMAIL`: optional HTTP API email sending. Use this if a hosting provider blocks or times out on SMTP ports.
 - `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`: enables hosted membership checkout.
 - `GOOGLE_CLIENT_ID`: enables the verified Google token endpoint.
 - `APP_URL`: the frontend origin used in email and payment return links.
@@ -128,7 +153,9 @@ pnpm seed:admin
 
 ## Code organization
 
-- `client/src/App.jsx`: route composition and page-level components.
+- `client/src/App.jsx`: route composition and shared authenticated page flows.
+- `client/src/pages/Home.jsx`: portfolio-facing homepage experience.
+- `client/src/pages/Admin.jsx`: admin/trainer workspace for role and class operations.
 - `client/src/ui.jsx`: reusable UI primitives such as icons, stats, empty states, skeletons, and confirmation modals.
 - `client/src/auth-context.jsx`: shared authenticated user context.
 - `server/routes/*`: feature-focused API modules for auth, classes, trainers, workouts, coach, admin, notifications, and payments.

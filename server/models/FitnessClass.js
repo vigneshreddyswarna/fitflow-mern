@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const fitnessClassSchema = new mongoose.Schema({
   title: { type: String, required: true },
   category: { type: String, required: true },
-  coach: { type: String, required: true },
+  coach: { type: String },
   trainer: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   schedule: { type: String, required: true },
   startsAt: { type: Date, required: true, default: () => new Date(Date.now() + 86400000) },
@@ -19,4 +19,4 @@ const fitnessClassSchema = new mongoose.Schema({
   accent: { type: String, default: '#c7f36b' }
 }, { timestamps: true });
 
-module.exports = mongoose.model('FitnessClass', fitnessClassSchema);
+module.exports = mongoose.models.FitnessClass || mongoose.model('FitnessClass', fitnessClassSchema);
