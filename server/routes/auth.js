@@ -38,7 +38,8 @@ router.post('/register', async (req, res, next) => {
 router.post('/login', async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select('+password');
-    if (!user || !(await bcrypt.compare(req.body.password || '', user.password))) return res.status(401).json({ message: 'Incorrect email or password' });
+    if (!user) return res.status(404).json({ message: 'No account found with this email. Please create an account first.' });
+    if (!(await bcrypt.compare(req.body.password || '', user.password))) return res.status(401).json({ message: 'Incorrect password' });
     res.json({ token: tokenFor(user), user: safeUser(user) });
   } catch (error) { next(error); }
 });
@@ -121,13 +122,12 @@ router.post('/resend-verification', async (req, res, next) => {
 router.post('/forgot-password', async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email?.toLowerCase() }).select('+passwordResetToken +passwordResetExpires');
+    if (!user) return res.status(404).json({ message: 'No account found with this email. Please sign up first.' });
     let resetCode;
-    if (user) {
-      resetCode = otpCode();
-      user.passwordResetToken = hashedToken(resetCode); user.passwordResetExpires = Date.now() + 10 * 60 * 1000; await user.save();
-      await sendEmail({ to: user.email, subject: 'Your FitFlow password reset code', text: `Your FitFlow password reset code is ${resetCode}. It expires in 10 minutes.` });
-    }
-    res.json({ message: 'If that email exists, a reset code has been sent', ...(user ? devOnlyCode('resetCode', resetCode) : {}) });
+    resetCode = otpCode();
+    user.passwordResetToken = hashedToken(resetCode); user.passwordResetExpires = Date.now() + 10 * 60 * 1000; await user.save();
+    await sendEmail({ to: user.email, subject: 'Your FitFlow password reset code', text: `Your FitFlow password reset code is ${resetCode}. It expires in 10 minutes.` });
+    res.json({ message: 'Reset code sent to your email', ...devOnlyCode('resetCode', resetCode) });
   } catch (error) { next(error); }
 });
 

@@ -1,6 +1,6 @@
 # FitFlow - MERN Fitness Consistency Platform
 
-FitFlow is a full-stack fitness product that helps people build a routine they can sustain. Members can create an account, discover and book coached classes, log workouts, and review their weekly activity.
+FitFlow is a full-stack fitness product that helps people build a routine they can sustain. Members can create an account, discover and book trainer-led classes, log workouts, and review their weekly activity.
 
 ## Project highlights
 
@@ -8,7 +8,7 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 - Production-minded auth: JWT sessions, bcrypt password hashing, protected routes, role-based access, verified-email guards, and production-safe OTP responses.
 - Class operations that go beyond CRUD: capacity checks, atomic booking for final spots, waitlists, cancellation, trainer ownership, and admin role management.
 - Public trainer profile pages with specialties, bio, certifications, and assigned classes.
-- Coaching feature with graceful fallback: OpenAI can generate adaptive plans, but the rules engine still works without an API key.
+- AI Coach feature with graceful fallback: OpenAI can generate adaptive plans, but the rules engine still works without an API key.
 - Portfolio polish: responsive React UI, PWA metadata, CI workflow, automated tests, security headers, rate limiting, and clean project structure.
 
 ## Why this project exists
@@ -27,8 +27,8 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 - Responsive, accessible React interface
 - MongoDB persistence through Mongoose
 - Production build served by Express
-- Adaptive weekly coaching using goals, availability, workout history, and real classes
-- Safe deterministic coaching fallback when no AI key is configured
+- Adaptive AI Coach plans using goals, availability, workout history, and real classes
+- Safe deterministic AI Coach fallback when no AI key is configured
 - Admin and trainer role-based workspaces
 - Real dated sessions, editing, cancellation, waitlists, trainer ownership, and automatic promotion
 - Account settings for goals, training profile, trainer profile, and password updates
@@ -43,7 +43,7 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 
 React, React Router, Recharts, Vite, Node.js, Express, MongoDB, Mongoose, JWT, and bcrypt.
 
-Optional integrations use OpenAI, Stripe, Google Identity, EmailJS, and SMTP/Brevo. The core coach remains functional without those services.
+Optional integrations use OpenAI, Stripe, Google Identity, and SMTP/Brevo email delivery. The AI Coach remains functional without those services.
 
 ## Run locally
 
@@ -81,7 +81,7 @@ Use the values you set in `.env` for `ADMIN_EMAIL` and `ADMIN_PASSWORD`. Admin u
 ## Optional service configuration
 
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enables generated adaptive plans. Without them, the safe rules engine creates plans.
-- `SMTP_*` or `EMAILJS_*`: sends verification, reset, and booking emails. Brevo works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587`, the Brevo SMTP login, and the Brevo SMTP key. Without an email provider, messages are printed as local previews.
+- `SMTP_*`: sends verification, reset, and booking emails. Brevo works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key. Without an email provider, messages are printed as local previews.
 - `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`: enables hosted membership checkout.
 - `GOOGLE_CLIENT_ID`: enables the verified Google token endpoint.
 - `APP_URL`: the frontend origin used in email and payment return links.
