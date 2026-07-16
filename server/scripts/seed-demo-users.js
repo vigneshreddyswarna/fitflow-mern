@@ -42,7 +42,7 @@ async function seedDemoUsers() {
     const password = await bcrypt.hash(user.password, 12);
     await User.findOneAndUpdate(
       { email: user.email.toLowerCase() },
-      { $set: { ...user, email: user.email.toLowerCase(), password, isEmailVerified: true } },
+      { $set: { ...user, email: user.email.toLowerCase(), password, isEmailVerified: true, demoAccount: true } },
       { upsert: true, new: true, runValidators: true }
     );
     console.log(`${user.role} demo ready: ${user.email}`);

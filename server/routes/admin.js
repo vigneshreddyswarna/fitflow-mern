@@ -49,7 +49,7 @@ router.get('/analytics', roles('admin', 'trainer'), async (req, res, next) => {
   } catch (error) { next(error); }
 });
 router.get('/users', roles('admin'), async (_req, res, next) => { try { res.json(await User.find().select('name email role isEmailVerified goal trainerProfile createdAt').sort({ createdAt: -1 })); } catch (error) { next(error); } });
-router.patch('/users/:id/role', roles('admin'), async (req, res, next) => {
+router.patch('/users/:id/role', roles('admin'), blockDemoMutation, async (req, res, next) => {
   try {
     if (!['member', 'trainer', 'admin'].includes(req.body.role)) return res.status(400).json({ message: 'Invalid role' });
     res.json(await User.findByIdAndUpdate(req.params.id, { role: req.body.role }, { new: true }).select('name email role'));
@@ -64,6 +64,11 @@ router.get('/classes', roles('admin', 'trainer'), async (req, res, next) => {
     res.json(await FitnessClass.find(query).populate('trainer', 'name email trainerProfile').populate('attendees', 'name email').populate('waitlist', 'name email').populate('attendance.user', 'name email').sort({ startsAt: 1 }));
   } catch (error) { next(error); }
 });
+
+function blockDemoMutation(req, res, next) {
+  if (req.user.demoAccount) return res.status(403).json({ message: 'Demo accounts are read-only for admin and trainer changes' });
+  next();
+}
 
 async function classPayload(req) {
   const allowed = ['title', 'category', 'schedule', 'startsAt', 'duration', 'level', 'capacity'];
@@ -86,22 +91,22 @@ async function classPayload(req) {
   return payload;
 }
 
-router.post('/classes', roles('admin', 'trainer'), async (req, res, next) => {
+router.post('/classes', roles('admin', 'trainer'), blockDemoMutation, async (req, res, next) => {
   try { res.status(201).json(await FitnessClass.create(await classPayload(req))); } catch (error) { error.status ||= 400; next(error); }
 });
-router.patch('/classes/:id', roles('admin', 'trainer'), async (req, res, next) => {
+router.patch('/classes/:id', roles('admin', 'trainer'), blockDemoMutation, async (req, res, next) => {
   try {
     res.json(await FitnessClass.findOneAndUpdate(req.user.role === 'trainer' ? { _id: req.params.id, trainer: req.user.id } : { _id: req.params.id }, await classPayload(req), { new: true, runValidators: true }));
   } catch (error) { error.status ||= 400; next(error); }
 });
-router.delete('/classes/:id', roles('admin', 'trainer'), async (req, res, next) => {
+router.delete('/classes/:id', roles('admin', 'trainer'), blockDemoMutation, async (req, res, next) => {
   try {
     const query = req.user.role === 'trainer' ? { _id: req.params.id, trainer: req.user.id } : { _id: req.params.id };
     res.json(await FitnessClass.findOneAndUpdate(query, { cancelled: true }, { new: true }));
   } catch (error) { next(error); }
 });
 
-router.patch('/classes/:id/attendance/:userId', roles('admin', 'trainer'), async (req, res, next) => {
+router.patch('/classes/:id/attendance/:userId', roles('admin', 'trainer'), blockDemoMutation, async (req, res, next) => {
   try {
     if (!['attended', 'missed'].includes(req.body.status)) return res.status(400).json({ message: 'Invalid attendance status' });
     const query = req.user.role === 'trainer' ? { _id: req.params.id, trainer: req.user.id } : { _id: req.params.id };
