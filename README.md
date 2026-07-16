@@ -4,7 +4,7 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 
 ## Live Preview
 
-[Open the FitFlow live website](https://fitflow-mern.onrender.com)
+[Try FitFlow](https://fitflow-mern.onrender.com)
 
 ## Project highlights
 
