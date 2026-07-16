@@ -2,6 +2,10 @@
 
 FitFlow is a full-stack fitness product that helps people build a routine they can sustain. Members can create an account, discover and book trainer-led classes, log workouts, and review their weekly activity.
 
+## Live Preview
+
+[Open the FitFlow live website](https://fitflow-mern.onrender.com)
+
 ## Project highlights
 
 - Real MERN product flow: signup, email OTP verification, login, dashboard, class booking, workout logging, settings, and admin/trainer operations.
