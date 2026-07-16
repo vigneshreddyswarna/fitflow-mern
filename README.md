@@ -1,5 +1,10 @@
 # FitFlow - MERN Fitness Consistency Platform
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Try_FitFlow-00A76F?style=for-the-badge)](https://fitflow-mern.onrender.com)
+[![CI](https://github.com/vigneshreddyswarna/fitflow-mern/actions/workflows/ci.yml/badge.svg)](https://github.com/vigneshreddyswarna/fitflow-mern/actions/workflows/ci.yml)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![MERN Stack](https://img.shields.io/badge/Stack-MERN-47A248.svg)](#tech-stack)
+
 FitFlow is a full-stack fitness product that helps people build a routine they can sustain. Members can create an account, discover and book trainer-led classes, log workouts, and review their weekly activity.
 
 ## Live Preview
@@ -18,6 +23,10 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 - Portfolio polish: responsive React UI, PWA metadata, CI workflow, automated tests, security headers, rate limiting, and clean project structure.
 
 ## Screenshots
+
+<details>
+<summary>View screenshots</summary>
+
 
 ### Home
 
@@ -47,11 +56,17 @@ FitFlow is a full-stack fitness product that helps people build a routine they c
 
 ![FitFlow admin manage](docs/screenshots/admin-manage.png)
 
+</details>
+
 ## Why this project exists
 
 Many fitness products focus on intense short-term plans. FitFlow focuses on repeatable habits: make a plan, show up, and see momentum grow. It upgrades the original static FitZone site into a real product with persistent user data.
 
 ## Features
+
+<details>
+<summary>View complete feature list</summary>
+
 
 - JWT authentication with bcrypt password hashing
 - Protected member dashboard
@@ -77,6 +92,8 @@ Many fitness products focus on intense short-term plans. FitFlow focuses on repe
 - Automatic MET-based calorie estimates and detailed exercise/measurement models
 - In-app notifications, email delivery, PWA installation, and offline frontend caching
 - Helmet security headers, authentication rate limiting, and automated tests
+
+</details>
 
 ## Tech stack
 
