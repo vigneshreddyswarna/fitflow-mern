@@ -4,8 +4,8 @@ services:
     runtime: node
     plan: free
     autoDeploy: true
-    buildCommand: corepack enable && corepack prepare pnpm@11.7.0 --activate && pnpm install --frozen-lockfile && pnpm build
-    startCommand: pnpm start
+    buildCommand: "corepack enable && corepack prepare pnpm@11.7.0 --activate && pnpm install --frozen-lockfile && pnpm build"
+    startCommand: "pnpm start"
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
