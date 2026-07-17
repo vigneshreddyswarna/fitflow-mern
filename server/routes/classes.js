@@ -6,7 +6,6 @@ const { requireVerified } = require('../middleware/auth');
 const Notification = require('../models/Notification');
 const { sendEmail } = require('../services/email');
 const Workout = require('../models/Workout');
-const logger = require('../utils/logger');
 
 const demoClasses = [
   { title: 'Power Hour', category: 'Strength', coach: 'Maya Rao', schedule: 'Mon - 6:30 PM', duration: 50, level: 'Intermediate', capacity: 14, accent: '#c7f36b' },
@@ -65,6 +64,7 @@ const publicClass = item => {
 
 router.get('/', async (_req, res, next) => {
   try {
+    await seedDemoClasses();
     const classes = await FitnessClass.find({ cancelled: false }).populate('trainer', 'name trainerProfile').sort({ startsAt: 1 }).lean();
     res.json(classes.map(publicClass));
   } catch (error) { next(error); }
@@ -72,6 +72,7 @@ router.get('/', async (_req, res, next) => {
 
 router.get('/stats/summary', async (_req, res, next) => {
   try {
+    await seedDemoClasses();
     const [members, classes, workouts] = await Promise.all([
       User.countDocuments({ isEmailVerified: true }),
       FitnessClass.countDocuments({ cancelled: false }),
@@ -94,7 +95,7 @@ router.post('/:id/book', auth, requireVerified, async (req, res, next) => {
   try {
     const booked = await FitnessClass.findOneAndUpdate(
       { _id: req.params.id, attendees: { $ne: req.user.id }, cancelled: false, $expr: { $lt: [{ $size: '$attendees' }, '$capacity'] } },
-      { $addToSet: { attendees: req.user.id }, $pull: { waitlist: req.user.id } },
+      { $addToSet: { attendees: req.user.id } },
       { new: true }
     );
     if (!booked) {
@@ -108,8 +109,8 @@ router.post('/:id/book', auth, requireVerified, async (req, res, next) => {
     await User.findByIdAndUpdate(req.user.id, { $addToSet: { bookedClasses: booked._id } });
     const user = await User.findById(req.user.id);
     await Notification.create({ user: req.user.id, type: 'booking', title: 'Class booked', message: `${booked.title} - ${booked.schedule}` });
+    await sendEmail({ to: user.email, subject: `Booked: ${booked.title}`, text: `Your FitFlow class is confirmed for ${booked.schedule}.` });
     res.json({ message: 'Class booked successfully', waitlisted: false, spotsLeft: booked.capacity - booked.attendees.length });
-    setImmediate(() => sendEmail({ to: user.email, subject: `Booked: ${booked.title}`, text: `Your FitFlow class is confirmed for ${booked.schedule}.` }).catch(error => logger.error({ err: error, userId: req.user.id, classId: booked.id }, 'booking email failed')));
   } catch (error) { next(error); }
 });
 
@@ -135,4 +136,3 @@ router.get('/mine/booked', auth, requireVerified, async (req, res, next) => {
 });
 
 module.exports = router;
-module.exports.seedDemoClasses = seedDemoClasses;

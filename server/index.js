@@ -4,9 +4,6 @@ const path = require('path');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const cookieParser = require('cookie-parser');
-const pinoHttp = require('pino-http');
-const logger = require('./utils/logger');
 require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
@@ -17,7 +14,6 @@ const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
 const paymentRoutes = require('./routes/payments');
 const trainerRoutes = require('./routes/trainers');
-const { webhook: stripeWebhook } = paymentRoutes;
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -29,11 +25,8 @@ function validateEnv() {
 }
 
 app.set('trust proxy', 1);
-app.use(pinoHttp({ logger }));
 app.use(helmet({ contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false }));
 app.use(cors({ origin: process.env.NODE_ENV === 'production' ? false : (process.env.APP_URL || 'http://localhost:5173') }));
-app.use(cookieParser());
-app.post('/api/payments/webhook', express.raw({ type: 'application/json', limit: '256kb' }), stripeWebhook);
 app.use(express.json({ limit: '1mb' }));
 app.use('/api/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 50, standardHeaders: 'draft-8', legacyHeaders: false }));
 app.use('/api/auth', authRoutes);
@@ -44,10 +37,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/trainers', trainerRoutes);
-app.get('/api/health', (_req, res) => {
-  const connected = mongoose.connection.readyState === 1;
-  res.status(connected || process.env.NODE_ENV === 'test' ? 200 : 503).json({ status: connected ? 'ok' : 'degraded', database: connected ? 'connected' : 'disconnected' });
-});
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' }));
 
 if (process.env.NODE_ENV === 'production') {
   const dist = path.join(__dirname, '../client/dist');
@@ -55,20 +45,18 @@ if (process.env.NODE_ENV === 'production') {
   app.use((_req, res) => res.sendFile(path.join(dist, 'index.html')));
 }
 
-app.use((err, req, res, _next) => {
-  req.log?.error({ err, requestId: req.id }, 'request failed');
-  const status = err.status || 500;
-  const safeMessage = status >= 500 && process.env.NODE_ENV === 'production' ? 'Something went wrong' : (err.message || 'Something went wrong');
-  res.status(status).json({ message: safeMessage, code: err.code || (status >= 500 ? 'INTERNAL_ERROR' : 'REQUEST_ERROR'), requestId: req.id });
+app.use((err, _req, res, _next) => {
+  console.error(err);
+  res.status(err.status || 500).json({ message: err.message || 'Something went wrong' });
 });
 
 async function start() {
   try {
     validateEnv();
     await mongoose.connect(process.env.MONGODB_URI);
-    app.listen(PORT, () => logger.info({ port: PORT }, 'FitFlow API started'));
+    app.listen(PORT, () => console.log(`FitFlow API running at http://localhost:${PORT}`));
   } catch (error) {
-    logger.fatal({ err: error }, 'Startup failed');
+    console.error(`Startup failed: ${error.message}`);
     process.exit(1);
   }
 }

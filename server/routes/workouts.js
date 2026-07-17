@@ -4,15 +4,13 @@ const auth = require('../middleware/auth');
 const { requireVerified } = require('../middleware/auth');
 const User = require('../models/User');
 const Measurement = require('../models/Measurement');
-const validate = require('../middleware/validate');
-const schemas = require('../validation/schemas');
 
 router.use(auth);
 router.use(requireVerified);
 router.get('/', async (req, res, next) => {
   try { res.json(await Workout.find({ user: req.user.id }).sort({ completedAt: -1 }).limit(30)); } catch (error) { next(error); }
 });
-router.post('/', validate(schemas.workout), async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id).lean();
     const met = { Light: 3.5, Moderate: 6, Hard: 8.5 }[req.body.intensity] || 6;

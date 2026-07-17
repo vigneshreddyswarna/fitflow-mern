@@ -107,8 +107,6 @@ npm run dev
 
 Run automated tests with `pnpm test` and create a production build with `pnpm build`.
 
-Production-quality checks are available through `pnpm lint`, `pnpm test:coverage`, `pnpm test:e2e`, `pnpm audit --prod`, and `pnpm smoke`. See [Testing strategy](docs/TESTING.md).
-
 Database-backed integration tests are included for signup OTP, forgot-password OTP, booking/waitlist, and admin role changes. They run only when a separate test database is configured:
 
 ```bash
@@ -150,7 +148,7 @@ Use non-personal email addresses for these accounts and keep the actual password
 - `OPENAI_API_KEY` and `OPENAI_MODEL`: enables generated adaptive plans. Without them, the safe rules engine creates plans.
 - `SMTP_*`: sends verification, reset, and booking emails. Brevo SMTP works with `SMTP_HOST=smtp-relay.brevo.com`, `SMTP_PORT=587` or `2525`, the Brevo SMTP login, and the Brevo SMTP key.
 - `BREVO_API_KEY` and `BREVO_SENDER_EMAIL`: HTTP API email sending. Use this on Render if SMTP ports time out; it is the most reliable production OTP option.
-- `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, and `STRIPE_WEBHOOK_SECRET`: enable hosted membership checkout and signed subscription updates. See [Production operations](docs/OPERATIONS.md).
+- `STRIPE_SECRET_KEY` and `STRIPE_PRICE_ID`: enables hosted membership checkout.
 - `GOOGLE_CLIENT_ID`: enables the verified Google token endpoint.
 - `APP_URL`: the frontend origin used in email and payment return links.
 - `NODE_ENV=production`: required in deployment so OTP codes are never included in API responses.
@@ -198,8 +196,6 @@ pnpm seed:admin
 6. Add screenshots to the repository after deployment: home, classes, dashboard, AI coach, settings, and admin manage screen.
 
 ## Code organization
-
-See [Architecture](docs/ARCHITECTURE.md) for request, authentication, billing, and reliability boundaries, and [Production operations](docs/OPERATIONS.md) for deployment, monitoring, Stripe, and branch-protection configuration.
 
 - `client/src/App.jsx`: route composition and shared authenticated page flows.
 - `client/src/components/*`: shared navigation and form controls such as password visibility and OTP entry.
