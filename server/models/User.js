@@ -13,6 +13,12 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: { type: String, select: false },
   passwordResetExpires: { type: Date, select: false },
   googleId: { type: String, sparse: true },
+  membership: {
+    status: { type: String, enum: ['free', 'active', 'past_due', 'cancelled'], default: 'free' },
+    stripeCustomerId: { type: String, index: true, sparse: true },
+    stripeSubscriptionId: { type: String, index: true, sparse: true },
+    currentPeriodEnd: Date
+  },
   goal: { type: String, enum: ['Build strength', 'Lose weight', 'Improve fitness', 'Stay active'], default: 'Stay active' },
   trainerProfile: {
     headline: { type: String, maxlength: 100, default: '' },
@@ -30,5 +36,7 @@ const userSchema = new mongoose.Schema({
   },
   bookedClasses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'FitnessClass' }]
 }, { timestamps: true });
+
+userSchema.index({ role: 1, isEmailVerified: 1 });
 
 module.exports = mongoose.models.User || mongoose.model('User', userSchema);
