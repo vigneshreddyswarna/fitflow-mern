@@ -8,7 +8,7 @@ export default defineConfig({
       reporter: ['text', 'json-summary'],
       include: ['server/**/*.js'],
       exclude: ['server/scripts/**'],
-      thresholds: { lines: 45, functions: 20, statements: 45, branches: 25 }
+      thresholds: { lines: 50, functions: 25, statements: 50, branches: 50 }
     }
   }
 });

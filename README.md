@@ -1,5 +1,7 @@
 # FitFlow - MERN Fitness Consistency Platform
 
+[![CI](https://github.com/vigneshreddyswarna/fitflow-mern/actions/workflows/ci.yml/badge.svg)](https://github.com/vigneshreddyswarna/fitflow-mern/actions/workflows/ci.yml)
+
 FitFlow is a full-stack fitness product that helps people build a routine they can sustain. Members can create an account, discover and book trainer-led classes, log workouts, and review their weekly activity.
 
 ## Live Preview

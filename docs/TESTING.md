@@ -10,3 +10,5 @@
 - `pnpm smoke`: checks the deployed homepage and database-aware health endpoint.
 
 GitHub Actions runs the complete suite with an isolated MongoDB service. New critical workflows should include an integration test and, when user-visible, an end-to-end test.
+
+Coverage gates require at least 50% lines/statements, 50% branches, and 25% functions across server code. CI retains the full coverage report for seven days and uploads Playwright traces whenever a browser check fails.

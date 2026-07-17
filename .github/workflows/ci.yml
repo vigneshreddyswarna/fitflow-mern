@@ -6,9 +6,17 @@ on:
   pull_request:
     branches: [main, master]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     services:
       mongodb:
         image: mongo:7
@@ -48,6 +56,14 @@ jobs:
       - name: Enforce coverage thresholds
         run: pnpm test:coverage
 
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage
+          retention-days: 7
+
       - name: Lint
         run: pnpm lint
 
@@ -62,3 +78,12 @@ jobs:
 
       - name: Run browser smoke tests
         run: pnpm test:e2e
+
+      - name: Upload browser failure traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-failure-traces
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7
