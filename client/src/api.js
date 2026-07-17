@@ -1,14 +1,9 @@
-const TOKEN_KEY = 'fitflow_token';
-
-export const getToken = () => localStorage.getItem(TOKEN_KEY);
-export const setToken = (token) => token ? localStorage.setItem(TOKEN_KEY, token) : localStorage.removeItem(TOKEN_KEY);
-
 export async function api(path, options = {}) {
   const response = await fetch(`/api${path}`, {
     ...options,
+    credentials: 'same-origin',
     headers: {
       'Content-Type': 'application/json',
-      ...(getToken() ? { Authorization: `Bearer ${getToken()}` } : {}),
       ...options.headers
     }
   });

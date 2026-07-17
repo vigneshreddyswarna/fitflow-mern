@@ -24,4 +24,9 @@ const fitnessClassSchema = new mongoose.Schema({
   accent: { type: String, default: '#c7f36b' }
 }, { timestamps: true });
 
+fitnessClassSchema.index({ cancelled: 1, startsAt: 1 });
+fitnessClassSchema.index({ trainer: 1, cancelled: 1, startsAt: 1 });
+fitnessClassSchema.index({ attendees: 1 });
+fitnessClassSchema.index({ waitlist: 1 });
+
 module.exports = mongoose.models.FitnessClass || mongoose.model('FitnessClass', fitnessClassSchema);
